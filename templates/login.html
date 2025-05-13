@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>認証ページ - ウルトラサイバーバージョン</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle, #1a1a1a, #0b0b0b, #121212);
+      font-family: 'Orbitron', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      color: #fff;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .auth-container {
+      position: relative;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 50px 80px;
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+      text-align: center;
+      box-shadow: 0 0 60px rgba(255, 0, 0, 0.8);
+      width: 80%;
+      max-width: 800px;
+    }
+
+    h1 {
+      font-size: 48px;
+      color: #ff007f;
+      text-shadow: 0 0 20px #ff007f, 0 0 40px #ff007f, 0 0 60px #ff007f;
+      margin-bottom: 40px;
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.15); }
+    }
+
+    .auth-button {
+      background: linear-gradient(135deg, #ff007f, #00ffcc);
+      color: #000;
+      border: none;
+      padding: 20px 40px;
+      font-size: 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease-in-out;
+      box-shadow: 0 0 30px rgba(255, 0, 255, 0.6);
+    }
+
+    .auth-button:hover {
+      transform: translateY(-8px) scale(1.1);
+      box-shadow: 0 0 40px rgba(255, 0, 255, 1);
+    }
+
+    .message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1.2);
+      color: #ff4d4d;
+      font-size: 56px;
+      font-weight: bold;
+      opacity: 0;
+      text-shadow: 0 0 20px #ff4d4d, 0 0 40px #ff4d4d, 0 0 60px #ff4d4d;
+      animation: glow-text 2s infinite alternate;
+      white-space: nowrap;
+      z-index: 20;
+    }
+
+    @keyframes glow-text {
+      0% {
+        text-shadow: 0 0 20px #ff4d4d, 0 0 40px #ff4d4d, 0 0 60px #ff4d4d;
+      }
+      100% {
+        text-shadow: 0 0 40px #ff4d4d, 0 0 80px #ff4d4d, 0 0 120px #ff4d4d;
+      }
+    }
+
+    .message.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.3);
+    }
+
+    .star {
+      position: absolute;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      animation: move-stars 7s linear infinite;
+      opacity: 0.6;
+    }
+
+    @keyframes move-stars {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(100vh); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="spaceCanvas"></canvas>
+
+  <div class="auth-container" id="authContainer">
+    <h1 id="authTitle">認証が必要です</h1>
+    <button class="auth-button" id="authButton" onclick="window.location.href='/login'">認証する</button>
+  </div>
+
+  <div id="authMessage" class="message"></div>
+
+  <script>
+    const canvas = document.getElementById('spaceCanvas');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+
+    function initStars() {
+      const numberOfStars = 200;
+      stars = [];
+      for (let i = 0; i < numberOfStars; i++) {
+        stars.push({
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          radius: Math.random() * 2 + 0.5,
+          speed: Math.random() * 0.3 + 0.2
+        });
+      }
+    }
+
+    function drawStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'white';
+      stars.forEach(star => {
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fill();
+        star.y += star.speed;
+        if (star.y > canvas.height) {
+          star.y = 0;
+          star.x = Math.random() * canvas.width;
+        }
+      });
+      requestAnimationFrame(drawStars);
+    }
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initStars();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    drawStars();
+
+    // 星を生成
+    function generateStar() {
+      const star = document.createElement('div');
+      const size = Math.random() * 3 + 2;
+      star.classList.add('star');
+      star.style.width = `${size}px`;
+      star.style.height = `${size}px`;
+      star.style.top = `${Math.random() * 100}vh`;
+      star.style.left = `${Math.random() * 100}vw`;
+      document.body.appendChild(star);
+    }
+
+    for (let i = 0; i < 100; i++) {
+      generateStar();
+    }
+  </script>
+</body>
+</html>
