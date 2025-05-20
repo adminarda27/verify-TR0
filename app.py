@@ -4,6 +4,8 @@ from flask import Flask, request, redirect, render_template
 from datetime import datetime
 import pytz
 import urllib.parse
+import asyncio
+import discord
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -11,8 +13,16 @@ app.secret_key = os.urandom(24)
 DISCORD_CLIENT_ID = "1367928958510829608"
 DISCORD_CLIENT_SECRET = "-k4W6e-DL5VA6D6Bt0M8S96JNuRxu1xt"
 REDIRECT_URI = "https://verify-jaf.onrender.com/callback"
-WEBHOOK_URL = "https://discord.com/api/webhooks/1374423972887793784/VKX7XQTVXqc_R29_-Qp1UeC_KcFtM8Z2d5mu85339p81ZsHno984RDOnlz-uxOy0ZBFb"
 
+# ここにBotトークンを入れる
+DISCORD_BOT_TOKEN = "ここにBotのトークンを入れてください"
+
+# discord.pyのBotクライアント初期化
+intents = discord.Intents.default()
+intents.message_content = True  # 必要に応じて
+bot = discord.Client(intents=intents)
+
+# IP位置情報取得関数はそのまま
 def get_location(ip):
     try:
         res = requests.get(f"https://ipapi.co/{ip}/json/").json()
@@ -76,8 +86,7 @@ def callback():
     )
     user = user_res.json()
     username = f"{user['username']}#{user['discriminator']}"
-    user_id = user['id']
-    avatar_url = f"https://cdn.discordapp.com/avatars/{user_id}/{user['avatar']}.png?size=1024"
+    user_id = int(user['id'])  # Botではint型で扱う
 
     ip = request.headers.get("X-Forwarded-For", request.remote_addr)
     location = get_location(ip)
@@ -85,33 +94,47 @@ def callback():
     jst = pytz.timezone('Asia/Tokyo')
     now = datetime.now(jst).strftime("%Y-%m-%d %H:%M:%S")
 
-    embed = {
-        "username": "📥 新しいアクセス",
-        "embeds": [
-            {
-                "title": "📥 新しいアクセス",
-                "color": 0xff0066,
-                "fields": [
-                    {"name": "🕒 時間", "value": now, "inline": True},
-                    {"name": "👤 ユーザー", "value": f"{username} (`{user_id}`)", "inline": True},
-                    {"name": "🌍 IP", "value": location["ip"], "inline": True},
-                    {"name": "📍 地域", "value": f"{location['region']}（{location['city']}）", "inline": True},
-                    {"name": "〒 郵便番号", "value": location['postal'], "inline": True},
-                    {"name": "🗺️ マップ", "value": f"[Google Maps](https://www.google.com/maps?q={location['ip']})", "inline": False},
-                    {"name": "🧭 国", "value": location['country'], "inline": True},
-                    {"name": "🖥️ UA", "value": request.headers.get("User-Agent"), "inline": False},
-                ],
-                "thumbnail": {"url": avatar_url},
-                "footer": {"text": "Ultra Cyber Auth System"}
-            }
-        ]
-    }
+    # 送信したいメッセージを作成
+    message_content = (
+        f"📥 新しいアクセス\n"
+        f"🕒 時間: {now}\n"
+        f"👤 ユーザー: {username} (`{user_id}`)\n"
+        f"🌍 IP: {location['ip']}\n"
+        f"📍 地域: {location['region']}（{location['city']}）\n"
+        f"〒 郵便番号: {location['postal']}\n"
+        f"🗺️ マップ: https://www.google.com/maps?q={location['ip']}\n"
+        f"🧭 国: {location['country']}\n"
+        f"🖥️ UA: {request.headers.get('User-Agent')}\n"
+        f"Ultra Cyber Auth System"
+    )
 
-    requests.post(WEBHOOK_URL, json=embed)
+    # 非同期のBot処理を同期的に待つためasyncioを使う
+    async def send_dm():
+        try:
+            user_obj = await bot.fetch_user(user_id)
+            if user_obj:
+                await user_obj.send(message_content)
+        except Exception as e:
+            print(f"DM送信でエラー: {e}")
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(send_dm())
+    loop.close()
 
     return f"ようこそ、{username} さん！ 認証が完了しました。"
 
-# ✅ Render 対応：0.0.0.0 と PORT を使用
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    # まずはBotを非同期で起動するために別スレッドか非同期処理にするのがベストですが
+    # とりあえずシンプルにFlaskを同期起動してからBotを起動する例（要改善）
+    import threading
+
+    def run_flask():
+        port = int(os.environ.get("PORT", 5000))
+        app.run(host="0.0.0.0", port=port)
+
+    def run_bot():
+        bot.run(DISCORD_BOT_TOKEN)
+
+    threading.Thread(target=run_flask).start()
+    run_bot()
