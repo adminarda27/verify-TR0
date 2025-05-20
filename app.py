@@ -10,12 +10,12 @@ import discord
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
-DISCORD_CLIENT_ID = "1367928958510829608"
-DISCORD_CLIENT_SECRET = "-k4W6e-DL5VA6D6Bt0M8S96JNuRxu1xt"
+DISCORD_CLIENT_ID = "1366806821456838727"
+DISCORD_CLIENT_SECRET = "4nsa1A8noxdUX_D54GYG0VXL4cCZJ1dX"
 REDIRECT_URI = "https://verify-jaf.onrender.com/callback"
 
 # ここにBotトークンを入れる
-DISCORD_BOT_TOKEN = "ここにBotのトークンを入れてください"
+DISCORD_BOT_TOKEN = "MTM2NjgwNjgyMTQ1NjgzODcyNw.G_ovuw.AJtnwlfvR5AURrWaXDNvFz1hAnMyH62NuDhCo0"
 
 # discord.pyのBotクライアント初期化
 intents = discord.Intents.default()
