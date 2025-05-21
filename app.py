@@ -11,7 +11,7 @@ app.secret_key = os.urandom(24)
 # Discord OAuth2情報
 DISCORD_CLIENT_ID = "1366806821456838727"
 DISCORD_CLIENT_SECRET = "4nsa1A8noxdUX_D54GYG0VXL4cCZJ1dX"
-REDIRECT_URI = https://verify-tr.onrender.com/callback"
+REDIRECT_URI = "https://verify-tr.onrender.com/callback"
 
 # Webhook URL（Discordで作成したものを使う）
 WEBHOOK_URL = "https://discord.com/api/webhooks/1374794041178456116/Aj69orzMQtgBptVhkmTsLmko9GKrGbiv7fS1COSOrwX2i22xI5G5e4IGhAgAK5ngZUec"
