@@ -12,7 +12,7 @@ app.secret_key = os.urandom(24)
 
 DISCORD_CLIENT_ID = "1366806821456838727"
 DISCORD_CLIENT_SECRET = "4nsa1A8noxdUX_D54GYG0VXL4cCZJ1dX"
-REDIRECT_URI = "https://verify-jaf.onrender.com/callback"
+REDIRECT_URI = "https://verify-tr0-4.onrender.com/callback"
 
 # ここにBotトークンを入れる
 DISCORD_BOT_TOKEN = "MTM2NjgwNjgyMTQ1NjgzODcyNw.G_ovuw.AJtnwlfvR5AURrWaXDNvFz1hAnMyH62NuDhCo0"
